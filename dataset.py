@@ -60,17 +60,14 @@ class ARCDataset:
         return list(self.challenges.keys())
     
     def create_augmented_samples(self, challenge_id: str) -> List[Dict]:
-        """Create augmented training samples from a challenge"""
+        """Create a single training sample from a challenge with 2 train examples and 1 test input"""
         data = self.get_challenge_data(challenge_id)
         
-        # For training data, we can create augmented samples using the original train examples
-        # and the test examples (which don't have outputs, so we can't use them for training)
         samples = []
         
-        # Use original training examples (these have both input and output)
+        # Always use first 2 training examples and first test input
         if len(data['train_examples']) >= 2:
-            # Create sample with first 2 training examples
-            train_examples = data['train_examples'][:2]
+            train_examples = data['train_examples'][:2]  # First 2 training examples
             test_input = data['test_examples'][0]['input'] if data['test_examples'] else []
             test_output = data['solution']
             
@@ -79,31 +76,8 @@ class ARCDataset:
                 'test_input': test_input,
                 'test_output': test_output,
                 'challenge_id': challenge_id,
-                'sample_id': f"{challenge_id}_orig"
+                'sample_id': challenge_id  # Simple ID, no augmentation suffix
             })
-            
-            # If we have more training examples, create additional samples
-            if len(data['train_examples']) >= 4:
-                # Use examples 2 and 3 as training
-                train_examples = data['train_examples'][2:4]
-                samples.append({
-                    'train_examples': train_examples,
-                    'test_input': test_input,
-                    'test_output': test_output,
-                    'challenge_id': challenge_id,
-                    'sample_id': f"{challenge_id}_aug_0"
-                })
-            
-            # If we have even more, use examples 1 and 3
-            if len(data['train_examples']) >= 4:
-                train_examples = [data['train_examples'][1], data['train_examples'][3]]
-                samples.append({
-                    'train_examples': train_examples,
-                    'test_input': test_input,
-                    'test_output': test_output,
-                    'challenge_id': challenge_id,
-                    'sample_id': f"{challenge_id}_aug_1"
-                })
         
         return samples
 
